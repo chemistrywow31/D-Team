@@ -12,6 +12,54 @@ A full-stack development team powered by **OpenSpec + GSD** integrated workflow,
 
 Supports both **Claude Code** and **Codex** runtimes.
 
+### Related Projects
+
+D-Team is built on top of two engines. You'll need them installed to use the full workflow:
+
+| Project | What It Does | Install |
+|---------|-------------|---------|
+| [**OpenSpec**](https://github.com/openspec-dev/openspec) | Spec-alignment engine — ensures human and AI agree on WHAT to build before writing code. Produces proposals, specs, and design docs that serve as the single source of truth for requirements. | `npm install -g openspec` |
+| [**GSD**](https://github.com/wmayner/gsd) | Execution engine for Claude Code — handles HOW to build. Provides wave-based parallel execution, independent context windows (200K each), session persistence, and atomic commits. | In Claude Code: `/skill-install gsd` |
+
+> **Note**: GSD is a Claude Code skill and is not available in Codex. When using Codex, the Tech Lead agent coordinates execution directly.
+
+#### Enabling `/opsx:*` Commands
+
+D-Team includes 6 skill wrappers (in `.claude/skills/openspec-*/`) that provide `/opsx:*` slash commands in Claude Code. These skills call the `openspec` CLI under the hood.
+
+**Setup:**
+
+```bash
+# 1. Install the OpenSpec CLI
+npm install -g openspec
+
+# 2. Initialize OpenSpec in your project
+cd /path/to/your-project
+openspec init
+# Edit openspec/config.yaml — set project name, description, constraints
+
+# 3. The /opsx:* commands are available immediately
+#    (they come from .claude/skills/openspec-*/ which is included in D-Team)
+```
+
+**Available commands:**
+
+| Command | What It Does |
+|---------|-------------|
+| `/opsx:explore "topic"` | Enter thinking mode — investigate codebase, draw ASCII diagrams, surface risks. **No code written.** |
+| `/opsx:propose "feature-name"` | Create a full change: proposal.md → specs/ → design.md → tasks.md, with user confirmation between steps. |
+| `/opsx:ff "name" "description"` | Fast-forward — generate all artifacts (proposal, specs, design, tasks) in one pass without pausing for confirmation. Use when you have a clear picture. |
+| `/opsx:verify "change-name"` | Verify implementation against specs across 3 dimensions: **completeness** (all requirements implemented?), **correctness** (behavior matches scenarios?), **coherence** (design decisions followed?). |
+| `/opsx:sync "change-name"` | Sync delta specs from an active change back to main `openspec/specs/` mid-development, without archiving. |
+| `/opsx:archive "change-name"` | Archive a completed change — move to `openspec/changes/archive/`, merge delta specs back to main specs. |
+
+**Typical flow:**
+```
+/opsx:explore → /opsx:propose → (implement) → /opsx:verify → /opsx:archive
+       or
+/opsx:ff → (implement) → /opsx:verify → /opsx:archive
+```
+
 ### Table of Contents
 
 - [What This Team Does](#what-this-team-does)
@@ -630,6 +678,54 @@ your-project/
 結合 **OpenSpec + GSD** 整合式開發流程的全端開發團隊，內建 **WTF-likelihood 停損機制**與 **Fix-first 程式碼審查**。
 
 同時支援 **Claude Code** 與 **Codex** 兩種執行環境。
+
+### 相關專案
+
+D-Team 建構在兩個引擎之上，使用完整流程前需要先安裝：
+
+| 專案 | 用途 | 安裝方式 |
+|-----|------|---------|
+| [**OpenSpec**](https://github.com/openspec-dev/openspec) | 規格對齊引擎 — 確保人與 AI 在寫程式前對「要做什麼」達成共識。產出 proposal、specs、design docs，作為需求的唯一真實來源。 | `npm install -g openspec` |
+| [**GSD**](https://github.com/wmayner/gsd) | Claude Code 專用的執行引擎 — 負責「怎麼做」。提供波次平行執行、獨立 context window（每個 200K）、session 持久化、原子提交。 | 在 Claude Code 中：`/skill-install gsd` |
+
+> **注意**：GSD 是 Claude Code 專屬的 skill，Codex 無法使用。使用 Codex 時，由 Tech Lead agent 直接協調執行。
+
+#### 啟用 `/opsx:*` 指令
+
+D-Team 內含 6 個 skill wrapper（位於 `.claude/skills/openspec-*/`），在 Claude Code 中提供 `/opsx:*` slash commands。這些 skill 底層呼叫 `openspec` CLI。
+
+**設定步驟：**
+
+```bash
+# 1. 安裝 OpenSpec CLI
+npm install -g openspec
+
+# 2. 在你的專案中初始化 OpenSpec
+cd /path/to/your-project
+openspec init
+# 編輯 openspec/config.yaml — 填入專案名稱、描述、約束條件
+
+# 3. /opsx:* 指令立即可用
+#   （來自 .claude/skills/openspec-*/，已包含在 D-Team 中）
+```
+
+**可用指令：**
+
+| 指令 | 功能 |
+|-----|------|
+| `/opsx:explore "主題"` | 進入思考模式 — 調查 codebase、畫 ASCII 架構圖、發掘風險。**不寫程式。** |
+| `/opsx:propose "功能名稱"` | 建立完整 change：proposal.md → specs/ → design.md → tasks.md，每一步之間會等使用者確認。 |
+| `/opsx:ff "名稱" "描述"` | 快轉模式 — 一次產出所有規格文件（proposal、specs、design、tasks），不暫停確認。適合已有清楚藍圖的場景。 |
+| `/opsx:verify "change-name"` | 從 3 個維度驗證實作是否符合規格：**完整性**（所有需求都實作了？）、**正確性**（行為符合場景？）、**一致性**（設計決策被遵循？）。 |
+| `/opsx:sync "change-name"` | 開發中途將 delta specs 同步回主目錄 `openspec/specs/`，不歸檔。 |
+| `/opsx:archive "change-name"` | 歸檔已完成的 change — 移至 `openspec/changes/archive/`，合併 delta specs 回主 specs。 |
+
+**典型流程：**
+```
+/opsx:explore → /opsx:propose → （實作）→ /opsx:verify → /opsx:archive
+       或
+/opsx:ff → （實作）→ /opsx:verify → /opsx:archive
+```
 
 ### 目錄
 
