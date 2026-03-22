@@ -67,7 +67,7 @@ This team ships with a **tech-stack agnostic** configuration. Agent skills refer
 
 ```bash
 # 1. Clone D-Team into your project
-git clone https://github.com/anthropics/D-Team.git d-team-source
+git clone https://github.com/chemistrywow31/D-Team.git d-team-source
 cp -r d-team-source/.claude/ /path/to/your-project/.claude/
 cp d-team-source/CLAUDE.md /path/to/your-project/CLAUDE.md
 rm -rf d-team-source
@@ -140,7 +140,7 @@ If GSD prompts you to run `discuss-phase`, you can skip it with `--auto` or go d
 
 ```bash
 # 1. Clone D-Team and copy Codex files to your project
-git clone https://github.com/anthropics/D-Team.git d-team-source
+git clone https://github.com/chemistrywow31/D-Team.git d-team-source
 cp -r d-team-source/agents/ /path/to/your-project/agents/
 cp -r d-team-source/.codex/ /path/to/your-project/.codex/
 cp d-team-source/AGENTS.md /path/to/your-project/AGENTS.md
@@ -686,7 +686,7 @@ D-Team 出廠時**不綁定任何技術棧**，所有 agent 的 skill 採用通�
 
 ```bash
 # 1. Clone D-Team 並複製到你的專案
-git clone https://github.com/anthropics/D-Team.git d-team-source
+git clone https://github.com/chemistrywow31/D-Team.git d-team-source
 cp -r d-team-source/.claude/ /path/to/your-project/.claude/
 cp d-team-source/CLAUDE.md /path/to/your-project/CLAUDE.md
 rm -rf d-team-source
@@ -757,7 +757,7 @@ GSD 有自己的內部 agents（`gsd-planner`、`gsd-executor` 等），負責**
 
 ```bash
 # 1. Clone D-Team 並複製 Codex 所需檔案
-git clone https://github.com/anthropics/D-Team.git d-team-source
+git clone https://github.com/chemistrywow31/D-Team.git d-team-source
 cp -r d-team-source/agents/ /path/to/your-project/agents/
 cp -r d-team-source/.codex/ /path/to/your-project/.codex/
 cp d-team-source/AGENTS.md /path/to/your-project/AGENTS.md
