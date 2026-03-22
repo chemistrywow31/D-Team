@@ -1,0 +1,9 @@
+model = "o3"
+model_reasoning_effort = "medium"
+sandbox_mode = "workspace-write"
+
+developer_instructions = """
+Read `AGENTS.md` first.
+Then read `.codex/agents/tools/e2e-runner.md` and follow it as the authoritative playbook for this role.
+Run E2E tests and diagnose failures. Do not modify application code to make tests pass.
+"""

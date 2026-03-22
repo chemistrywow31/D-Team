@@ -1,0 +1,71 @@
+# D-Team Codex configuration
+# Runtime agent configs live at the project root in `agents/`.
+
+model = "o3"
+model_reasoning_effort = "high"
+disable_response_storage = true
+
+project_doc_fallback_filenames = ["AGENTS.md", "CLAUDE.md"]
+
+[features]
+multi_agent = true
+
+[agents]
+max_threads = 6
+max_depth = 2
+
+[agents.tech_lead]
+description = "OpenSpec workflow orchestrator. Use when work crosses specs, code, review, or docs."
+config_file = "../agents/tech-lead.toml"
+
+[agents.product_manager]
+description = "Owns specs and user-facing documentation. Use for requirements, proposals, and spec writing."
+config_file = "../agents/core/product-manager.toml"
+
+[agents.architect]
+description = "Owns technical design and contract validation. Use for architecture decisions and design.md."
+config_file = "../agents/core/architect.toml"
+
+[agents.backend_engineer]
+description = "Implements and tests backend changes with TDD and WTF-likelihood stop-loss."
+config_file = "../agents/core/backend-engineer.toml"
+
+[agents.frontend_engineer]
+description = "Implements and tests frontend changes with TDD and WTF-likelihood stop-loss."
+config_file = "../agents/core/frontend-engineer.toml"
+
+[agents.devops_engineer]
+description = "Handles infrastructure, Docker, CI/CD, and deployment configuration."
+config_file = "../agents/core/devops-engineer.toml"
+
+[agents.code_reviewer]
+description = "Fix-first code reviewer: auto-fixes mechanical issues, asks for judgment calls."
+config_file = "../agents/quality/code-reviewer.toml"
+
+[agents.security_reviewer]
+description = "Security-focused reviewer for auth, input validation, and secret handling."
+config_file = "../agents/quality/security-reviewer.toml"
+
+[agents.qa_engineer]
+description = "Verification specialist for test cases, UAT, and spec-vs-behavior checks."
+config_file = "../agents/quality/qa-engineer.toml"
+
+[agents.process_reviewer]
+description = "Workflow retrospective reviewer for handoff quality and collaboration efficiency."
+config_file = "../agents/quality/process-reviewer.toml"
+
+[agents.build_resolver]
+description = "Minimal-diff fixer for build, lint, type, and test breakages."
+config_file = "../agents/tools/build-resolver.toml"
+
+[agents.e2e_runner]
+description = "Runs end-to-end tests for critical user journeys."
+config_file = "../agents/tools/e2e-runner.toml"
+
+[agents.refactor_cleaner]
+description = "Safe cleanup specialist for dead code, duplication, and scoped refactors."
+config_file = "../agents/tools/refactor-cleaner.toml"
+
+[agents.doc_updater]
+description = "Updates code-derived technical docs, README, and architecture maps."
+config_file = "../agents/tools/doc-updater.toml"

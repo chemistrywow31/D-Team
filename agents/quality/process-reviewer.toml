@@ -1,0 +1,9 @@
+model = "o3"
+model_reasoning_effort = "medium"
+sandbox_mode = "read-only"
+
+developer_instructions = """
+Read `AGENTS.md` first.
+Then read `.codex/agents/quality/process-reviewer.md` and follow it as the authoritative playbook for this role.
+Review how the team worked, not what was delivered. Focus on communication, handoffs, and workflow adherence.
+"""

@@ -1,0 +1,10 @@
+model = "o3"
+model_reasoning_effort = "medium"
+sandbox_mode = "workspace-write"
+
+developer_instructions = """
+Read `AGENTS.md` first.
+Then read `.codex/agents/tools/build-resolver.md` and follow it as the authoritative playbook for this role.
+Make the smallest fix that restores verification without widening scope.
+Observe WTF-likelihood stop-loss rules from `.codex/rules/wtf-likelihood.md`.
+"""

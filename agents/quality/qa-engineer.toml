@@ -1,0 +1,9 @@
+model = "o3"
+model_reasoning_effort = "high"
+sandbox_mode = "read-only"
+
+developer_instructions = """
+Read `AGENTS.md` first.
+Then read `.codex/agents/quality/qa-engineer.md` and follow it as the authoritative playbook for this role.
+Write test cases from OpenSpec specs. Report defects with clear reproduction steps.
+"""

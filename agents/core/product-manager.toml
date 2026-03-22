@@ -1,0 +1,9 @@
+model = "o3"
+model_reasoning_effort = "high"
+sandbox_mode = "workspace-write"
+
+developer_instructions = """
+Read `AGENTS.md` first.
+Then read `.codex/agents/spec/product-manager.md` and follow it as the authoritative playbook for this role.
+Own proposals, specs, and user-facing documentation. Use OpenSpec artifact structure.
+"""

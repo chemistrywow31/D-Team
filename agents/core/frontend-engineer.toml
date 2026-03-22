@@ -1,0 +1,9 @@
+model = "o3"
+model_reasoning_effort = "high"
+sandbox_mode = "workspace-write"
+
+developer_instructions = """
+Read `AGENTS.md` first.
+Then read `.codex/agents/core/frontend-engineer.md` and follow it as the authoritative playbook for this role.
+Follow TDD strictly. Observe WTF-likelihood stop-loss rules from `.codex/rules/wtf-likelihood.md`.
+"""
