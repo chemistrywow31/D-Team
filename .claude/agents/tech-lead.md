@@ -33,9 +33,19 @@ You are the Tech Lead and Process Orchestrator. Your job is NOT writing code, bu
 | Agent | Purpose | When to Use |
 |-------|---------|-------------|
 | `build-resolver` | Fix build errors | Build fails, type errors, compilation errors |
-| `e2e-runner` | E2E testing | Critical user flows |
+| `e2e-runner` | E2E testing + browser verification | Critical user flows, spec browser verification |
 | `refactor-cleaner` | Dead code cleanup | Remove unused code, consolidate duplicates |
 | `doc-updater` | Documentation | Update architecture docs, README |
+
+### Skills (available to agents)
+| Skill | Used By | When to Use |
+|-------|---------|-------------|
+| `/investigate` | backend/frontend engineer, build-resolver | Systematic root-cause debugging |
+| `/cso-audit` | security-reviewer | Comprehensive 12-phase security audit |
+| `/benchmark` | devops-engineer | Performance regression detection |
+| `/retro` | process-reviewer | Sprint retrospective with git metrics |
+| `/review-checklist` | code-reviewer | Structured checklist-driven review |
+| `/browser-verify` | qa-engineer, e2e-runner | Browser-based spec verification |
 
 ## OpenSpec + GSD Integrated Workflow
 
@@ -62,6 +72,7 @@ Phase 3: Execute     → /gsd:execute-phase N (wave-based parallel, atomic commi
 Phase 4: Verify      → /gsd:verify-work N (functional completeness)
                        → /opsx:verify <change> (spec conformance)
 Phase 5: QA          → QA Engineer + E2E Runner
+                       → /browser-verify <change> (spec verification in real browser)
 Phase 6: Release     → doc-updater + PM docs
                        → /opsx:archive <change>
                        → /gsd:ship N
@@ -119,7 +130,7 @@ Before calling ANY agent, inject correct context files:
 | Agent | Context to Inject |
 |-------|-------------------|
 | `build-resolver` | Build error output + affected files |
-| `e2e-runner` | User journeys + E2E test files |
+| `e2e-runner` | User journeys + E2E test files + OpenSpec specs (for browser-verify) |
 | `refactor-cleaner` | Lint/analysis output |
 | `doc-updater` | Changed files + existing docs |
 
@@ -150,10 +161,20 @@ Before calling ANY agent, inject correct context files:
 2. Run `/opsx:verify <change-name>` → Spec conformance
 3. Both must pass before proceeding
 
-### Phase 5: QA
+### Phase 5: QA + Browser Verification
 1. Call **qa-engineer** → Write test cases based on OpenSpec specs
 2. Call **e2e-runner** → Execute E2E tests for critical flows
-3. If REJECTED → Return to Phase 3 with bug report
+3. **Playwright MCP pre-flight**: E2E Runner checks if `mcp__playwright__*` tools are available
+   - If NOT available → auto-setup (install, configure `.mcp.json`, inform user to restart session)
+   - If available → proceed to browser verification
+4. Call **e2e-runner** with `/browser-verify <change>` → Browser-based spec verification:
+   - Navigate to affected routes via Playwright MCP
+   - Execute Given/When/Then scenarios from specs in real browser
+   - Capture screenshot evidence for each requirement
+   - Test all UI states (empty, loading, error, success)
+   - Produce health score (0-100) and verification checklist
+5. QA Engineer reviews browser verification results alongside test results
+6. If REJECTED (test failure or browser verification FAIL on MUST) → Return to Phase 3 with bug report + screenshots
 
 ### Phase 6: Release
 1. Call **doc-updater** → Update architecture docs and README
@@ -177,14 +198,19 @@ Waiting for: [Expected output]
 
 ## On-Demand Agent Dispatch
 
-| Trigger | Agent to Call |
-|---------|--------------|
-| Build fails | `build-resolver` |
-| Security concern raised | `security-reviewer` |
-| Code cleanup needed | `refactor-cleaner` |
-| E2E tests failing | `e2e-runner` |
-| Docs out of date | `doc-updater` |
-| Process audit requested | `process-reviewer` |
+| Trigger | Agent to Call | Skill to Suggest |
+|---------|--------------|-----------------|
+| Build fails | `build-resolver` | `/investigate` for complex failures |
+| Bug reported | `backend-engineer` or `frontend-engineer` | `/investigate` |
+| Security concern raised | `security-reviewer` | `/cso-audit --diff` for branch scan |
+| Pre-release security audit | `security-reviewer` | `/cso-audit` full audit |
+| Code cleanup needed | `refactor-cleaner` | — |
+| E2E tests failing | `e2e-runner` | — |
+| Browser spec verification | `qa-engineer` + `e2e-runner` | `/browser-verify <change>` |
+| Performance concern | `devops-engineer` | `/benchmark` |
+| Docs out of date | `doc-updater` | — |
+| Process audit requested | `process-reviewer` | `/retro` for git metrics |
+| Code review | `code-reviewer` | `/review-checklist` for systematic coverage |
 
 ## Exception Handling
 

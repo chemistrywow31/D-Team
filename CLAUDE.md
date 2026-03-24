@@ -38,10 +38,29 @@ This team is designed to be **tech-stack agnostic**. The default configuration t
 │   └── process-reviewer.md   # Workflow retrospective
 └── tools/                    # Utility agents
     ├── build-resolver.md     # Build/lint error fixes
-    ├── e2e-runner.md         # E2E test execution
+    ├── e2e-runner.md         # E2E + browser verification
     ├── refactor-cleaner.md   # Dead code cleanup
     └── doc-updater.md        # Documentation generation
 ```
+
+## Skills (gstack-enhanced)
+
+Skills are specialized capabilities available to specific agents. Agents invoke them as part of their workflow.
+
+| Skill | Agent(s) | Purpose |
+|-------|----------|---------|
+| `/investigate` | backend-engineer, frontend-engineer, build-resolver | Systematic root-cause debugging (5-phase hypothesis-driven) |
+| `/cso-audit` | security-reviewer | Comprehensive 12-phase security audit (OWASP, STRIDE, supply chain, LLM security) |
+| `/benchmark` | devops-engineer | Performance regression detection (timing, bundle size, resources) |
+| `/retro` | process-reviewer | Sprint retrospective with git metrics, velocity tracking, and trend analysis |
+| `/review-checklist` | code-reviewer | Structured checklist-driven review with test coverage audit |
+| `/browser-verify` | qa-engineer, e2e-runner | Browser-based spec verification against OpenSpec requirements |
+| `/opsx:explore` | — | Investigate ideas and problems before proposing changes |
+| `/opsx:propose` | — | Interactive OpenSpec artifact creation |
+| `/opsx:ff` | — | Fast-forward: generate all OpenSpec artifacts at once |
+| `/opsx:verify` | — | Verify implementation matches OpenSpec specs |
+| `/opsx:sync` | — | Mid-development spec sync |
+| `/opsx:archive` | — | Complete a change and archive |
 
 ## Deployment Mode
 
@@ -88,6 +107,7 @@ Phase 3: Execute      → /gsd:execute-phase N (wave-based parallel, atomic comm
 Phase 4: Verify       → /gsd:verify-work N (functional completeness)
                         → /opsx:verify <change> (spec conformance)
 Phase 5: QA           → QA Engineer + E2E Runner
+                        → /browser-verify <change> (spec verification in real browser)
 Phase 6: Release      → doc-updater + PM docs
                         → /opsx:archive <change> (merge delta specs)
                         → /gsd:ship N (create PR)
@@ -103,6 +123,93 @@ Phase 6: Release      → doc-updater + PM docs
 | Execution Progress | GSD | `.planning/STATE.md` + `ROADMAP.md` |
 
 When GSD plan contradicts OpenSpec specs → specs win. Correct the plan, not the specs.
+
+## Browser Automation
+
+Browser-based testing and verification use Playwright MCP with persistent login sessions.
+
+### MCP Configuration & Auto-Setup
+
+Browser verification requires Playwright MCP. Before any browser operation, the agent must verify the environment is ready. If not, set it up automatically.
+
+#### Environment Check Sequence
+
+```bash
+# 1. Check if .mcp.json exists with playwright config
+cat .mcp.json 2>/dev/null | grep -q "playwright"
+
+# 2. Check if @playwright/mcp is reachable
+npx @playwright/mcp@latest --help 2>/dev/null
+
+# 3. Check if Chromium browser is installed
+npx playwright install --dry-run chromium 2>/dev/null
+```
+
+#### Auto-Setup (if any check fails)
+
+**Step 1: Create `.mcp.json`** if missing or does not contain playwright config:
+
+```json
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest", "--user-data-dir", "/Users/wow/.playwright-mcp-profile"]
+    }
+  }
+}
+```
+
+If `.mcp.json` already exists with other MCP servers, merge the playwright entry — do not overwrite existing config.
+
+**Step 2: Install Playwright and Chromium browser**:
+
+```bash
+npm install -D @playwright/mcp@latest
+npx playwright install chromium
+```
+
+**Step 3: Create persistent profile directory** if it does not exist:
+
+```bash
+mkdir -p /Users/wow/.playwright-mcp-profile
+```
+
+**Step 4: Verify** by attempting a `mcp__playwright__browser_navigate` call. If the tool is not recognized, inform the user that a session restart is needed for MCP configuration to take effect.
+
+#### Session Restart Requirement
+
+MCP server configuration (`.mcp.json`) is loaded at session start. If `.mcp.json` was just created or modified, the `mcp__playwright__*` tools will not be available until the next session. In this case:
+1. Complete the setup steps above
+2. Inform the user: "Playwright MCP has been configured. Restart the session to activate browser tools."
+3. Do not attempt browser operations in the current session
+
+### Available Browser Tools
+
+| Tool | Purpose |
+|------|---------|
+| `mcp__playwright__browser_navigate` | Open a URL in the browser |
+| `mcp__playwright__browser_snapshot` | Get accessibility tree (element discovery) |
+| `mcp__playwright__browser_click` | Click an element on the page |
+| `mcp__playwright__browser_type` | Type text into an input field |
+| `mcp__playwright__browser_fill_form` | Fill multiple form fields at once |
+| `mcp__playwright__browser_take_screenshot` | Capture page state as evidence |
+| `mcp__playwright__browser_press_key` | Press keyboard keys (Enter, Tab, Escape) |
+
+### Browser Usage Rules
+
+- Always run `browser_snapshot` after navigating to discover element references — never guess at selectors
+- Cache the snapshot — do not re-snapshot the same page unless a selector fails
+- Take a screenshot after every verification step for evidence
+- One browser session at a time — do not attempt parallel browser sessions
+- Save all screenshots to `.worklog/{path}/screenshots/` with descriptive names
+
+### Who Uses Browser Tools
+
+| Agent | How |
+|-------|-----|
+| `qa-engineer` | Directs browser verification via `/browser-verify` skill, reviews results |
+| `e2e-runner` | Executes browser interactions, captures evidence, reports results |
 
 ## Safety Mechanisms
 

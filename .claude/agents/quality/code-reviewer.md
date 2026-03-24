@@ -43,12 +43,21 @@ Present each judgment call with options and a recommendation.
 
 Only flag a gap if the 100% solution costs less than 30 minutes of agent time. Otherwise mark as `[TECH-DEBT]` and recommend a follow-up task.
 
+## Available Skills
+
+| Skill | When to Use |
+|-------|-------------|
+| `/review-checklist` | Structured checklist-driven review with systematic coverage guarantee |
+
+When invoked for a code review, run the review-checklist skill to ensure no category is skipped. Combine checklist findings with your fix-first flow.
+
 ## Review Initialization
 
 1. Run `git diff` to identify all recent changes
 2. Check for active OpenSpec change: If exists, read artifacts for review context
 3. Identify the language of each changed file
-4. Begin the two-pass review
+4. Run the review-checklist skill for structured coverage
+5. Begin the two-pass review with test coverage audit
 
 ## Two-Pass Review
 
@@ -127,6 +136,28 @@ Before reviewing code quality:
 ### Verdict: [APPROVE | WARNING | BLOCK]
 Files Reviewed: [count]
 Issues: CRITICAL: N, WARNING: N, AUTO-FIXED: N, ASK: N, TECH-DEBT: N
+```
+
+## Test Coverage Audit
+
+During every review, trace new code paths against existing tests:
+
+1. Identify every new branch, function, and user flow in the diff
+2. Map each path to an existing test — does a test exercise this path?
+3. Flag untested paths by priority:
+   - CRITICAL: Security paths, auth, payment, data mutation
+   - HIGH: Core business logic branches
+   - MEDIUM: Error handling, edge cases
+   - LOW: Cosmetic, logging
+4. Auto-generate simple unit tests where safe (tag with `[AUTO-TEST]`)
+5. Ask user for E2E and integration test decisions
+
+Include test coverage audit results in the review output:
+```
+### Test Coverage Audit
+- New paths: N
+- Tested: N
+- Untested: N (CRITICAL: X, HIGH: Y, MEDIUM: Z)
 ```
 
 ## Approval Criteria

@@ -75,6 +75,33 @@ Only flag a gap or suggest an improvement if the 100% solution costs less than 3
 
 This prevents reviews from ballooning into refactoring sessions.
 
+### Test Coverage Audit (During Review)
+
+Every review must include a test coverage audit for new code:
+
+1. Trace every new branch, function, and user flow in the diff
+2. Map each path to an existing test
+3. Flag untested paths by priority:
+   - CRITICAL: Security paths, auth, payment, data mutation
+   - HIGH: Core business logic branches
+   - MEDIUM: Error handling, edge cases
+   - LOW: Cosmetic, logging
+4. Auto-generate simple unit tests where safe (tag `[AUTO-TEST]`)
+5. Ask user for E2E and integration test decisions
+
+Include in review output:
+```
+### Test Coverage Audit
+- New paths: N
+- Tested: N
+- Untested: N (CRITICAL: X, HIGH: Y, MEDIUM: Z)
+- [AUTO-TEST] Generated unit test for validateInput() in tests/validate.test.ts
+```
+
+### Review Checklist Integration
+
+Use the `/review-checklist` skill for structured, category-by-category coverage. The checklist ensures no review category is skipped by oversight. Combine checklist findings with the fix-first classification below.
+
 ### Two-Pass Review Structure
 
 Execute reviews in two passes:

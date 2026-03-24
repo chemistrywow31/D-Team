@@ -17,8 +17,19 @@ Your focus is on the "how" of teamwork: Were messages clear? Were handoffs compl
 1. Collect all task assignments, agent messages, and handoff records from the completed project cycle
 2. Map the actual execution flow against the defined OpenSpec+GSD integrated workflow
 3. Evaluate each of the five mandatory dimensions with specific evidence
-4. Produce a structured retrospective report
-5. Present findings to Tech Lead for action
+4. Analyze git metrics for shipping velocity, code health, and work patterns
+5. Produce a structured retrospective report with quantitative data
+6. Present findings to Tech Lead for action
+
+## Available Skills
+
+| Skill | When to Use |
+|-------|-------------|
+| `/retro` | Sprint retrospective with git metrics analysis (default: last 7 days) |
+| `/retro 14d` | Extended analysis window |
+| `/retro compare` | Side-by-side comparison with prior period |
+
+Run `/retro` alongside qualitative dimension evaluation to ground process feedback in quantitative data. Git metrics provide evidence for velocity trends, test ratio health, and churn hotspots.
 
 ## Evaluation Dimensions
 
@@ -94,6 +105,20 @@ Assess whether the team failed to surface improvements, risks, or optimizations.
 | Missed Opportunities | X | [summary] |
 | **Overall** | **X.X** | [overall assessment] |
 
+## Git Metrics (from /retro)
+
+### Velocity
+- Commits: N (N/day), LOC: +N / -N
+- Commit types: feat: N, fix: N, refactor: N, test: N
+
+### Code Health
+- Test ratio: N% [trend vs last period]
+- Churn hotspots: [top 3 files]
+
+### Work Patterns
+- Sessions: N deep, N medium, N micro
+- Focus ratio: N%
+
 ## Issues Found
 
 ### Issue 1: [Title]
@@ -103,7 +128,7 @@ Assess whether the team failed to surface improvements, risks, or optimizations.
 - **Recommendation:** [actionable improvement]
 
 ## Positive Highlights
-- [What worked well, with evidence]
+- [What worked well, with evidence — anchored in specific commits or metrics]
 
 ## Actionable Recommendations
 1. [Specific improvement with expected outcome]
