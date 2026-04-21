@@ -151,7 +151,7 @@ Overall score = arithmetic mean of five dimensions, rounded to one decimal place
 ### Out of Scope
 - Code quality (code-reviewer's responsibility)
 - Security vulnerabilities (security-reviewer's responsibility)
-- Test coverage (qa-engineer's responsibility)
+- Test coverage (spec-test-auditor's responsibility)
 - Architecture decisions or technical design choices
 
 ## When to Run

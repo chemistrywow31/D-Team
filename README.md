@@ -417,13 +417,15 @@ Phase 4: VERIFY (dual verification)
                    ▼
 Phase 5: QA (testing)
 ┌──────────────────────────────────────────────┐
-│  qa-engineer                                  │
-│    → Write test cases from OpenSpec scenarios │
-│    → Verify edge cases and error paths        │
+│  spec-test-auditor                            │
+│    → Author tests from OpenSpec scenarios     │
+│    → Nyquist gap sampling against ROADMAP     │
+│    → Produce coverage gap report              │
 │                                               │
-│  e2e-runner                                   │
+│  e2e-runner (owns /browser-verify)            │
 │    → Execute critical user flow tests         │
-│    → Diagnose failures (test bug vs app bug)  │
+│    → Orchestrate browser spec verification    │
+│    → Calculate health score, capture evidence │
 │                                               │
 │  If REJECTED → back to Phase 3 with defects   │
 │                                               │
@@ -506,7 +508,7 @@ Phase 6: RELEASE
 | Core | `devops-engineer` | sonnet | workspace-write | Infrastructure, CI/CD |
 | Quality | `code-reviewer` | opus | read-only | Code review (Fix-first flow) |
 | Quality | `security-reviewer` | sonnet | read-only | Security audit |
-| Quality | `qa-engineer` | sonnet | read-only | Test cases, UAT |
+| Quality | `spec-test-auditor` | sonnet | read-only | Behavioral tests from OpenSpec + ROADMAP Nyquist sampling |
 | Quality | `process-reviewer` | sonnet | read-only | Workflow retrospective |
 | Tools | `build-resolver` | haiku | workspace-write | Build/lint error fixes |
 | Tools | `e2e-runner` | haiku | workspace-write | E2E test execution |
@@ -601,7 +603,7 @@ description: {One sentence — when to use this skill}
 | Database (PostgreSQL, MongoDB, etc.) | `backend-engineer`, `database-reviewer` (if created) |
 | Infrastructure (Docker, K8s, Terraform, etc.) | `devops-engineer` |
 | Security (OWASP, auth patterns) | `security-reviewer` |
-| Testing framework (Jest, pytest, etc.) | `qa-engineer`, `e2e-runner` |
+| Testing framework (Jest, pytest, etc.) | `spec-test-auditor`, `e2e-runner` |
 
 #### Examples by Stack
 
@@ -1069,13 +1071,15 @@ Phase 4: 驗證（雙重驗證）
                    ▼
 Phase 5: QA（測試）
 ┌──────────────────────────────────────────────┐
-│  qa-engineer                                  │
-│    → 從 OpenSpec 場景撰寫測試案例                │
-│    → 驗證邊界案例和錯誤路徑                       │
+│  spec-test-auditor                            │
+│    → 從 OpenSpec 場景撰寫行為測試                │
+│    → 以 Nyquist 取樣檢查 ROADMAP 覆蓋缺口         │
+│    → 產出覆蓋缺口報告                            │
 │                                               │
-│  e2e-runner                                   │
+│  e2e-runner（擁有 /browser-verify）              │
 │    → 執行關鍵使用者流程測試                       │
-│    → 診斷失敗原因（測試問題 vs 應用問題）           │
+│    → 編排瀏覽器規格驗證                          │
+│    → 計算健康分數、擷取證據                       │
 │                                               │
 │  如果 REJECTED → 帶著缺陷報告回到 Phase 3        │
 │                                               │
@@ -1158,7 +1162,7 @@ Phase 6: 發布
 | 核心 | `devops-engineer` | sonnet | workspace-write | 基礎設施、CI/CD |
 | 品質 | `code-reviewer` | opus | read-only | Fix-first 程式碼審查 |
 | 品質 | `security-reviewer` | sonnet | read-only | 安全稽核 |
-| 品質 | `qa-engineer` | sonnet | read-only | 測試案例、UAT |
+| 品質 | `spec-test-auditor` | sonnet | read-only | 從 OpenSpec + ROADMAP Nyquist 取樣撰寫行為測試 |
 | 品質 | `process-reviewer` | sonnet | read-only | 流程回顧 |
 | 工具 | `build-resolver` | haiku | workspace-write | 建構錯誤修復 |
 | 工具 | `e2e-runner` | haiku | workspace-write | E2E 測試執行 |
@@ -1253,7 +1257,7 @@ description: {一句話描述 — 什麼時候載入這個 skill}
 | 資料庫（PostgreSQL、MongoDB 等） | `backend-engineer`、`database-reviewer`（需額外建立） |
 | 基礎設施（Docker、K8s、Terraform 等） | `devops-engineer` |
 | 安全（OWASP、認證模式） | `security-reviewer` |
-| 測試框架（Jest、pytest 等） | `qa-engineer`、`e2e-runner` |
+| 測試框架（Jest、pytest 等） | `spec-test-auditor`、`e2e-runner` |
 
 #### 各技術棧速查
 

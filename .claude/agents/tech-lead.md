@@ -26,7 +26,7 @@ You are the Tech Lead and Process Orchestrator. Your job is NOT writing code, bu
 |-------|---------|-------------|
 | `code-reviewer` | Code review (Fix-first) | After ANY code changes — mandatory |
 | `security-reviewer` | Security audit | Auth, user input, API endpoints, sensitive data |
-| `qa-engineer` | Quality assurance | Test cases, UAT, behavior verification |
+| `spec-test-auditor` | Behavioral test authoring + Nyquist gap sampling | Author tests from OpenSpec scenarios + ROADMAP sampling, produce coverage gap report (does NOT run browser tools) |
 | `process-reviewer` | Process retrospective | After each project cycle, review collaboration quality |
 
 ### Tools Agents (`tools/`)
@@ -45,7 +45,7 @@ You are the Tech Lead and Process Orchestrator. Your job is NOT writing code, bu
 | `/benchmark` | devops-engineer | Performance regression detection |
 | `/retro` | process-reviewer | Sprint retrospective with git metrics |
 | `/review-checklist` | code-reviewer | Structured checklist-driven review |
-| `/browser-verify` | qa-engineer, e2e-runner | Browser-based spec verification |
+| `/browser-verify` | e2e-runner | Browser-based spec verification (e2e-runner owns orchestration; spec-test-auditor hands off test cases) |
 
 ## OpenSpec + GSD Integrated Workflow
 
@@ -69,10 +69,12 @@ Phase 1: Propose     → /opsx:propose (PM + Architect: proposal → specs → d
 Phase 2: Plan        → /gsd:plan-phase N (reads OpenSpec specs + design)
 Phase 3: Execute     → /gsd:execute-phase N (wave-based parallel, atomic commits)
                        → Code Review (Fix-first) + Security Review (as applicable)
-Phase 4: Verify      → /gsd:verify-work N (functional completeness)
-                       → /opsx:verify <change> (spec conformance)
-Phase 5: QA          → QA Engineer + E2E Runner
-                       → /browser-verify <change> (spec verification in real browser)
+Phase 4: Verify      → /gsd:verify-work N (default — functional completeness, reads <verify><automated>)
+                       → /opsx:verify <change> (CONDITIONAL — only on contract-layer change;
+                         see rules/openspec-workflow.md "Contract-Layer Change Detection")
+Phase 5: QA          → spec-test-auditor + e2e-runner
+                       → spec-test-auditor authors tests (OpenSpec scenarios + ROADMAP Nyquist sampling)
+                       → e2e-runner orchestrates /browser-verify <change>
 Phase 6: Release     → doc-updater + PM docs
                        → /opsx:archive <change>
                        → /gsd:ship N
@@ -123,7 +125,7 @@ Before calling ANY agent, inject correct context files:
 |-------|-------------------|
 | `code-reviewer` | `git diff` output + affected files |
 | `security-reviewer` | Files handling auth/input/secrets |
-| `qa-engineer` | OpenSpec specs + user docs |
+| `spec-test-auditor` | OpenSpec specs + ROADMAP.md + existing test layout |
 | `process-reviewer` | Task assignments, agent messages, handoff records |
 
 ### Tools Agents
@@ -156,24 +158,28 @@ Before calling ANY agent, inject correct context files:
 4. Call **security-reviewer** → Security audit (if auth/input/API changes)
 5. If build fails → Call **build-resolver**
 
-### Phase 4: Dual Verification (medium+ only)
-1. Run `/gsd:verify-work N` → Functional completeness
-2. Run `/opsx:verify <change-name>` → Spec conformance
-3. Both must pass before proceeding
+### Phase 4: Default Single + Conditional Dual Verification (medium+ only)
+1. Run `/gsd:verify-work N` → Functional completeness (ALWAYS runs)
+2. Check contract-layer change detection (see `rules/openspec-workflow.md` "Contract-Layer Change Detection"):
+   - API schema changes (request/response shape, endpoint additions/removals)
+   - Data model changes (schema migrations, new/removed fields, type changes)
+   - Cross-change spec interactions (one change depends on or modifies another change's spec)
+3. If ANY condition met → Run `/opsx:verify <change-name>` → Spec conformance; both layers must pass
+4. If none met → GSD verify alone is sufficient; document skip reason in Phase 4 worklog
 
 ### Phase 5: QA + Browser Verification
-1. Call **qa-engineer** → Write test cases based on OpenSpec specs
+1. Call **spec-test-auditor** → Author behavioral tests from OpenSpec scenarios + Nyquist sample ROADMAP gaps
 2. Call **e2e-runner** → Execute E2E tests for critical flows
 3. **Playwright MCP pre-flight**: E2E Runner checks if `mcp__playwright__*` tools are available
    - If NOT available → auto-setup (install, configure `.mcp.json`, inform user to restart session)
    - If available → proceed to browser verification
-4. Call **e2e-runner** with `/browser-verify <change>` → Browser-based spec verification:
+4. Call **e2e-runner** with `/browser-verify <change>` → Browser-based spec verification (owned by e2e-runner):
    - Navigate to affected routes via Playwright MCP
    - Execute Given/When/Then scenarios from specs in real browser
    - Capture screenshot evidence for each requirement
    - Test all UI states (empty, loading, error, success)
    - Produce health score (0-100) and verification checklist
-5. QA Engineer reviews browser verification results alongside test results
+5. spec-test-auditor incorporates browser verification results into the final coverage gap report
 6. If REJECTED (test failure or browser verification FAIL on MUST) → Return to Phase 3 with bug report + screenshots
 
 ### Phase 6: Release
@@ -206,7 +212,7 @@ Waiting for: [Expected output]
 | Pre-release security audit | `security-reviewer` | `/cso-audit` full audit |
 | Code cleanup needed | `refactor-cleaner` | — |
 | E2E tests failing | `e2e-runner` | — |
-| Browser spec verification | `qa-engineer` + `e2e-runner` | `/browser-verify <change>` |
+| Browser spec verification | `e2e-runner` (spec-test-auditor authors the test cases, e2e-runner orchestrates the browser) | `/browser-verify <change>` |
 | Performance concern | `devops-engineer` | `/benchmark` |
 | Docs out of date | `doc-updater` | — |
 | Process audit requested | `process-reviewer` | `/retro` for git metrics |

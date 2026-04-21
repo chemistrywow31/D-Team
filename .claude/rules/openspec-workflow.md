@@ -7,7 +7,7 @@ description: Unified development workflow combining OpenSpec spec-alignment with
 
 ## Applicability
 
-- Applies to: `tech-lead`, `product-manager`, `architect`, `backend-engineer`, `frontend-engineer`, `code-reviewer`, `qa-engineer`
+- Applies to: `tech-lead`, `product-manager`, `architect`, `backend-engineer`, `frontend-engineer`, `code-reviewer`, `spec-test-auditor`
 - Scope: All new feature development and requirement-driven changes
 
 ## Rule Content
@@ -114,17 +114,34 @@ Use `/gsd:pause-work` + `/gsd:resume-work` for cross-session persistence.
 | `tasks.md` | Tech Lead | Implementation steps (reference when GSD plans execution) |
 | `.planning/phases/XX-YY-PLAN.md` | GSD Planner | Executable task plan (medium+ features) |
 
-### Dual Verification
+### Default Single + Conditional Dual Verification
 
-Medium and large features require dual verification from complementary perspectives:
+Phase 4 verification uses a layered strategy to avoid redundant 80%+ overlap between `/gsd:verify-work` and `/opsx:verify` when automated verify already references OpenSpec Gherkin scenarios.
 
-1. **GSD verify** (`/gsd:verify-work N`) — Checks functional completeness: all task plan `<done>` criteria met, automated tests pass
-2. **OpenSpec verify** (`/opsx:verify <change>`) — Checks spec conformance from three dimensions:
-   - **Completeness** — Every MUST/SHOULD requirement in specs has corresponding implementation
-   - **Correctness** — Implementation behavior matches Given/When/Then scenarios
-   - **Consistency** — No contradictions between modules
+**Default layer** (always runs):
+- `/gsd:verify-work N` — Checks functional completeness: all task plan `<done>` criteria met, automated tests pass. Reads the `<verify><automated>` block in PLAN.md, which MUST reference OpenSpec Gherkin scenarios for spec-driven features.
 
-Both must pass before proceeding to archive/ship.
+**Conditional layer** (runs ONLY when a contract-layer change is detected):
+- `/opsx:verify <change>` — Checks spec conformance from three dimensions:
+  - **Completeness** — Every MUST/SHOULD requirement in specs has corresponding implementation
+  - **Correctness** — Implementation behavior matches Given/When/Then scenarios
+  - **Consistency** — No contradictions between modules
+
+When contract-layer detection conditions below are NOT met, skip `/opsx:verify` — the GSD verify already covers spec conformance via its automated block. When they ARE met, both layers must pass before archive/ship.
+
+### Contract-Layer Change Detection
+
+Trigger `/opsx:verify` as the conditional dual-verification layer when ANY of the following applies:
+
+1. **API schema changes** — Request or response shape modifications, endpoint additions or removals, HTTP status code or header contract changes, GraphQL schema mutations, RPC signature changes.
+2. **Data model changes** — Schema migrations, new or removed fields, type changes on existing fields, index or constraint changes that alter observable data contracts, enum value additions or removals.
+3. **Cross-change spec interactions** — The current change depends on or modifies another change's spec (detected by inspecting `openspec/changes/<name>/specs/` for references to other change names, or by multi-change delta overlap in a single merge cycle).
+
+Detection procedure the Tech Lead runs before Phase 4:
+- Inspect `git diff` for files under `openspec/specs/`, API route files, schema or migration directories.
+- Inspect `openspec/changes/<name>/specs/` for cross-references to other changes.
+- If any condition above is met → run `/opsx:verify` in addition to `/gsd:verify-work`.
+- If none are met → run `/gsd:verify-work` only and record the skip reason in the Phase 4 worklog (`decisions.md`).
 
 ### How Agents Interact with OpenSpec + GSD
 
@@ -136,14 +153,15 @@ Both must pass before proceeding to archive/ship.
 | Backend Engineer | design.md, GSD plan | Code (marks tasks complete) |
 | Frontend Engineer | design.md, GSD plan | Code (marks tasks complete) |
 | Code Reviewer | All artifacts (for context) | Review comments only |
-| QA Engineer | specs/*.md, GSD plan | Test cases |
+| Spec Test Auditor | specs/*.md, GSD plan, ROADMAP.md | Behavioral test cases, coverage gap report |
 
 ## Violation Determination
 
 - New feature (medium+ scale) implemented without OpenSpec change → Violation
 - Medium+ feature uses `/opsx:apply` instead of GSD plan+execute → Violation
 - Implementation started without specs confirmed by user → Violation
-- Medium+ feature shipped without dual verification (GSD verify + OpenSpec verify) → Violation
+- Medium+ feature with a contract-layer change shipped without running conditional `/opsx:verify` → Violation
+- Tech Lead skipping `/opsx:verify` on a contract-layer change without documenting the detection decision in the Phase 4 worklog → Violation
 - GSD plan contradicts OpenSpec specs and plan was not corrected → Violation
 - Tasks marked complete without corresponding code changes → Violation
 

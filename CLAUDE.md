@@ -34,7 +34,7 @@ This team is designed to be **tech-stack agnostic**. The default configuration t
 ├── quality/                  # Review & QA agents
 │   ├── code-reviewer.md      # Code review (Fix-first flow)
 │   ├── security-reviewer.md  # Security audit
-│   ├── qa-engineer.md        # Quality assurance & testing
+│   ├── spec-test-auditor.md  # Behavioral test authoring + Nyquist gap sampling
 │   └── process-reviewer.md   # Workflow retrospective
 └── tools/                    # Utility agents
     ├── build-resolver.md     # Build/lint error fixes
@@ -54,7 +54,7 @@ Skills are specialized capabilities available to specific agents. Agents invoke 
 | `/benchmark` | devops-engineer | Performance regression detection (timing, bundle size, resources) |
 | `/retro` | process-reviewer | Sprint retrospective with git metrics, velocity tracking, and trend analysis |
 | `/review-checklist` | code-reviewer | Structured checklist-driven review with test coverage audit |
-| `/browser-verify` | qa-engineer, e2e-runner | Browser-based spec verification against OpenSpec requirements |
+| `/browser-verify` | e2e-runner | Browser-based spec verification against OpenSpec requirements (owned by e2e-runner; spec-test-auditor hands off test cases but does not orchestrate browser execution) |
 | `/opsx:explore` | — | Investigate ideas and problems before proposing changes |
 | `/opsx:propose` | — | Interactive OpenSpec artifact creation |
 | `/opsx:ff` | — | Fast-forward: generate all OpenSpec artifacts at once |
@@ -95,6 +95,8 @@ Communication topology in Agent Teams mode:
 | Medium | 2 ~ 8 hr | OpenSpec + GSD full integration (sweet spot) |
 | Large | > 1 day | Multi-phase OpenSpec + GSD + session persistence |
 
+For brownfield target projects: run `/gsd:map-codebase` once before Phase 0 (one-shot discovery fill-in, not per-feature).
+
 ### Medium Feature Workflow (Standard)
 
 ```
@@ -104,10 +106,12 @@ Phase 1: Propose      → /opsx:propose (PM + Architect: proposal → specs → 
 Phase 2: Plan         → /gsd:plan-phase N (reads OpenSpec specs + design)
 Phase 3: Execute      → /gsd:execute-phase N (wave-based parallel, atomic commits)
                         → Code Review (Fix-first) + Security Review
-Phase 4: Verify       → /gsd:verify-work N (functional completeness)
-                        → /opsx:verify <change> (spec conformance)
-Phase 5: QA           → QA Engineer + E2E Runner
-                        → /browser-verify <change> (spec verification in real browser)
+Phase 4: Verify       → /gsd:verify-work N (default — functional completeness, reads <verify><automated> in PLAN.md)
+                        → /opsx:verify <change> (conditional — run ONLY on contract-layer changes,
+                          see rules/openspec-workflow.md "Contract-Layer Change Detection")
+Phase 5: QA           → spec-test-auditor + e2e-runner
+                        → spec-test-auditor authors tests from OpenSpec scenarios + ROADMAP Nyquist sampling
+                        → e2e-runner owns /browser-verify <change> (spec verification in real browser)
 Phase 6: Release      → doc-updater + PM docs
                         → /opsx:archive <change> (merge delta specs)
                         → /gsd:ship N (create PR)
@@ -208,7 +212,7 @@ MCP server configuration (`.mcp.json`) is loaded at session start. If `.mcp.json
 
 | Agent | How |
 |-------|-----|
-| `qa-engineer` | Directs browser verification via `/browser-verify` skill, reviews results |
+| `spec-test-auditor` | Authors behavioral tests from OpenSpec scenarios and ROADMAP Nyquist sampling; hands off browser-executable tests to e2e-runner (does NOT run browser tools) |
 | `e2e-runner` | Executes browser interactions, captures evidence, reports results |
 
 ## Safety Mechanisms
