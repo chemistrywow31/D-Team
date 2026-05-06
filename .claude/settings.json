@@ -28,8 +28,6 @@
       "Bash(git commit *)",
       "Bash(npm install *)",
       "Bash(npx playwright install *)",
-      "Write",
-      "Edit",
       "Agent"
     ],
     "deny": [
